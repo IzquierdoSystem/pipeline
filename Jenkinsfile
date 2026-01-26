@@ -1,38 +1,19 @@
 pipeline {
-    agent any // Define que el pipeline puede ejecutarse en cualquier agente disponible
-
-    stages {
-        stage('Build') { 
-            steps {
-                echo 'Construyendo la aplicación...'
-                // Aquí irían comandos como: sh 'mvn clean package' o 'npm install'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                echo 'Ejecutando pruebas unitarias...'
-                // Aquí irían comandos como: sh 'make test' o 'npm test'
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo 'Desplegando la aplicación...'
-                // Aquí iría la lógica para enviar a producción o staging
-            }
-        }
-    }
-
-    post { 
-        always { 
-            echo 'Limpiando el espacio de trabajo...'
-        }
-        success {
-            echo '¡El Pipeline finalizó con éxito!'
-        }
-        failure {
-            echo 'Hubo un error en el Pipeline. Revisar logs.'
-        }
-    }
+agent any
+stages {
+stage('Build') {
+steps {
+sh 'npm install'
+sh 'npm run build'
 }
+}
+stage('Deploy') {
+steps {
+withCredentials([string(credentialsId: 'netlify-api-key', variable: 'NETLIFY_AUTH_TOKEN')]) {
+sh 'npx netlify deploy --prod --auth $NETLIFY_AUTH_TOKEN --dir=build'
+}
+}
+}
+}
+}
+
